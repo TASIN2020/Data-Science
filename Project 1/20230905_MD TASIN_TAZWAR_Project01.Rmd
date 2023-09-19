@@ -1,0 +1,181 @@
+---
+title: "Data Visualization"
+author: "MD. TASIN TAZWAR"
+date: "2023-08-31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Data Loading and Exploration
+
+Loading Packages
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(skimr)
+```
+
+Loading Palmer Penguins Dataset and displaying first few rows
+
+```{r}
+dataset <- read.csv("C:/Users/Tasin/Desktop/palmerpenguins.csv")
+head(dataset)
+```
+
+Providing a description of the dataset's variables
+
+```{r}
+glimpse(dataset)
+```
+There are 8 variables. Among 8 variables, there are 3 types. Chr, Num, and Int. The variables are: species, island, bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g, sex, and year. 
+
+## Calculating summary statistics (mean, median, standard deviation, max, and min) for each relevant numeric variable
+
+```{r}
+summary_data <- summary(dataset[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")])
+
+mean_values <- sapply(dataset[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")], mean, na.rm = TRUE)
+
+median_values <- sapply(dataset[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")], median, na.rm = TRUE)
+
+sd_values <- sapply(dataset[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")], sd, na.rm = TRUE)
+
+max_values <- sapply(dataset[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")], max, na.rm = TRUE)
+
+min_values <- sapply(dataset[, c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g")], min, na.rm = TRUE)
+
+summary_stat <-data.frame(
+  
+  Variabele = c("bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"),
+  Mean = mean_values,
+  Median = median_values,
+  SD = sd_values,
+  Max = max_values,
+  Min = min_values
+)
+
+print(summary_stat)
+
+```
+
+
+
+Creating grouped summaries based on penguin species using the `group_by` and `summarize` functions
+
+```{r}
+# Load Library
+
+library(dplyr)
+
+
+
+# Creating Grouped summaries
+
+group_summaries <- dataset %>%
+  group_by(species) %>%
+  summarize(
+    
+     mean_bill_length <- mean(bill_length_mm, na.rm = TRUE),
+     median_bill_length <- median(bill_length_mm, na.rm = TRUE),
+     sd_bill_length <- sd(bill_length_mm, na.rm = TRUE),
+     max_bill_length <- max(bill_length_mm, na.rm = TRUE),
+     min_bill_length <- min(bill_length_mm, na.rm = TRUE),
+     
+     mean_bill_depth <- mean(bill_depth_mm, na.rm = TRUE),
+     median_bill_depth <- median(bill_depth_mm, na.rm = TRUE),
+     sd_bill_depth <- sd(bill_depth_mm, na.rm = TRUE),
+     max_bill_depth <- max(bill_depth_mm, na.rm = TRUE),
+     min_bill_depth <- min(bill_depth_mm, na.rm = TRUE),
+     
+     mean_flipper_length <- mean(flipper_length_mm, na.rm = TRUE),
+     median_flipper_length <- median(flipper_length_mm, na.rm = TRUE),
+     sd_flipper_length <- sd(flipper_length_mm, na.rm = TRUE),
+     max_flipper_length <- max(flipper_length_mm, na.rm = TRUE),
+     min_flipper_length <- min(flipper_length_mm, na.rm = TRUE),
+     
+     mean_body_mass <- mean(body_mass_g, na.rm = TRUE),
+     median_body_mass <- median(body_mass_g, na.rm = TRUE),
+     sd_body_mass <- sd(body_mass_g, na.rm = TRUE),
+     max_body_mass <- max(body_mass_g, na.rm = TRUE),
+     min_body_mass <- min(body_mass_g, na.rm = TRUE),
+  )
+print(group_summaries)
+
+```
+
+
+For each variable, the mean and median values are close that indicates the data can be symmetric or it may indicate skewness. The minimum and maximum values of each variable are close that indicates anomalies. There are some missing values and those are dropped. The minimum bill length of "Chinstrap", and "Gentoo" species are exact same. The median body mass of "Adelie", and "Chinstrap" species are also exact same. Besides, there are some variables those are simillar among the species. 
+
+
+**Applying the skimr package**
+
+```{r}
+library(skimr)
+dataset %>%
+  dplyr::group_by(species) %>%
+  skim()
+```
+"skimr" package provides more elaborate and comprehensive summary of each variables. It also provides the visualization like histogram of each variables. It reduces the number of lines of the code that saves time. It helps to find the patterns, anomalies quickly.
+
+# Data Visualization
+Creating Different types of Visualization:
+
+**Scatter Plot**
+
+```{r}
+ggplot(
+  data = dataset,
+  mapping = aes(x = flipper_length_mm, y = bill_length_mm)
+) +
+  geom_point(aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") + labs(
+    title = "Bill length in Y axis and flipper length in X axis",
+    x = "Flipper length (mm)", y = "Bill length (mm)",
+    color = "Species", shape = "Species"
+  ) 
+
+```
+
+
+The scatter plot shows the relation between Flipper Length and Bill Length of 3 penguin species.The flipper length of 'Adelle' and 'Chinstrap' are similler type where 'Chinstrap' has more taller bill length than Adelle.On the other hand, bill length of Gentoo and Chinstrap have similarities whereas Gantoo has the largest size of the flipper length. The line demonstrate the correlation between the two variables of different penguin species. Closer data point from the line means higher correlation.
+
+
+**Bar Plot**
+
+```{r}
+ggplot(dataset, aes(x = species)) +
+  geom_bar()+
+  labs(
+    title = "Species in X axis and Species count in Y axis"
+  )
+```
+
+The Bar plot shows the categorical variable among the 3 species of penguins with respect to their count. "Chinstrap" is the lowest in number whereas "Gentoo" is the second highest in number near about 125 and the highest number is occupied by "Adelie" that has more than 150 in number.
+
+
+**Histogram**
+
+```{r}
+ggplot(dataset, aes(x = bill_length_mm)) +
+  geom_histogram(binwidth = 2)+
+  labs(
+    title = "Bill length in X axis and count in Y axis"
+  )
+```
+
+The histogram shows the count of values falling into different intervals. It visualizes the number of "bill length" of penguins based on the binwidth value. 
+
+
+# Project Report and Interpretation
+
+The project demonstrate data visualization along with summerization and preparation using R programming language. There are some library and package used while doing the tasks.There are 3 types of penguins and the data set describes their islands, bill length, depth, flipper length, body mass, etc. In this project, I found the summary statistics and made summarization using 'Group by' function. The analysis points out the absence of anomalies, missing data handlings, similarities among different variables like bill length, body mass. I also used "skimr" package for summarization and observe how better it is compared to 'Group by' function.
+
+There are some similarities that have been found while doing the summarization.For data visualization, I use scatterplot and observe some patterns between two variables of penguins. The plot illustrates the relationship between Flipper Length and Bill Length for three penguin species: Adelle, Chinstrap, and Gentoo.It told that Adelle and Chinstrap penguins have similar types of flipper lengths, but Chinstrap penguins generally have longer bill lengths than Adelle penguins. Besides, Gentoo and Chinstrap penguins have similarities in bill length, while Gentoo penguins have the largest flipper lengths among the three species. Using the bar plot, I have observed the number of each types of species and their corresponding data.
+
+R programming Language is an excellent language for data analysis and visualization. It is a high level user friendly language that has a large number of packages and libraries. Tidyverse is a collection of packages that provide a user friendly data manipulation and visualization workflow. Ggplot is a powerful visualization package that supports to create wide range of graphs, and plots. In this project, ggplot is used for data visualization (scatter plot, Bar plot, and Histogram). Dplyr is another package under tidyverse that allows filtering, summarization of data, grouping data, etc. In this project dplpyr is used for data summarization. Without ggplot package under tidyverse, coding for data visualization through graphs and plots would not user friendly and convenient. So tidyverse is a powerful set of packages that make the data analysis more convenient. 
+
