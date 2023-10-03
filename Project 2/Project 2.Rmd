@@ -1,0 +1,227 @@
+---
+title: "Project 2"
+author: "MD. TASIN TAZWAR"
+date: "2023-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Review the data table and look at the data types, distributions, values, etc.
+#   a. Detail any interesting patterns or issues you see.
+
+```{r}
+
+# Read the CSV file
+dataset <- read.csv("C:/Users/Tasin/Desktop/demographic.csv")
+
+# Display the first few rows of the dataset
+head(dataset)
+
+# Load the dplyr package
+library(dplyr)
+
+# using the glimpse function to see the dataset variable and type
+glimpse(dataset)
+
+
+```
+There are 2 types of variable of these 12 variables. One is 'Character', and another is 'Integer'.In the dataset, interestingly, most of the people are male, married and in 'FL' state.There is a person whose age is 112, and no one is below 20. 
+
+# Perform any necessary data cleaning and/or transformations. This could include, but not limited to, missing data, outliers, generation of new variables, binning, etc.
+
+```{r}
+# Load required libraries
+library(stringr)
+
+# Check for missing values
+missing_values <- sapply(dataset, function(x) sum(is.na(x)))
+
+# Display columns with missing values
+print(missing_values)
+
+# Remove rows with missing values in any column
+dataset <- dataset %>% na.omit()
+
+# Convert columns to the correct data types
+dataset$age <- as.integer(dataset$age)
+
+# Remove rows with Age greater than 100
+dataset <- dataset %>% filter(age <= 100)
+
+# Remove leading and trailing spaces from 'city' column
+dataset$city <- str_trim(dataset$city)
+
+# Summary
+summary(dataset)
+
+```
+In the dataset, it common to have some missing values. Firstly, I check for missing values and found no missing values. In the 'age' column, there may have some age that is written in as a string instead of integer. So, I convert the column as an integer. Besides, the number of people more than 100 years old is very limited. That is why, I remove the row who are more than 100 years old. In the 'city' column, people may use space before the city name and after the city name. So, I remove the leading and trailing spaces for 'city' column. Finally, I show the summary of the dataset. 
+
+# Summarize and/or aggregate the data table values in various ways with descriptive stats, counts, etc. over the entire dataset and by various groupings.
+# a. Explain each summarization step and why you did it. What patterns are you seeing?
+
+```{r}
+# Summarizing overall statistics
+summary_stats <- dataset %>%
+  summarize(
+    Mean_Age = mean(age, na.rm = TRUE),
+    Credit_Score = median(credit_score, na.rm = TRUE),
+    Max_Age = max(age, na.rm = TRUE),
+    Min_Credit_Score = min(credit_score, na.rm = TRUE),
+    Count = n()
+  )
+
+# Print the summary statistics
+print(summary_stats)
+
+```
+Summarization provides an overview of the dataset by calculating the statistics like the mean and max age, mean and median of the credit score, total count of rows.
+
+
+
+```{r}
+# Group the data by categorical variables like gender, and age
+grouped_summary <- dataset %>%
+  group_by(gender) %>%
+  summarize(
+    Mean_Age = mean(age, na.rm = TRUE),
+    Median_Credit_Score = median(credit_score, na.rm = TRUE),
+    Count = n()
+  )
+
+# Print the Grouped summary
+print(grouped_summary)
+
+```
+Through 'group_by' method, it is possible to group the data of the categorical variables. This helps to compare statistics among different groups like mean age, median credit score, etc. 
+
+
+
+```{r}
+# Count each unique value on 'gender' column
+gender_counts <- dataset %>%
+  count(gender)
+
+# Print count
+print(gender_counts)
+```
+The number of unique records in each column can be found through "count()" method. I have used this method on 'gender' column to see how many people are male and how many are female.The number of male is significantly higher than the number of female. 
+
+
+
+```{r}
+# Data Visualization
+
+# Creating box plots to visualize the pattern and relationship between the 'gender' and 'credit score'
+
+library(ggplot2)
+ggplot(dataset, aes(x = gender, y = credit_score)) +
+  geom_boxplot()
+
+```
+Here, I have visualized the distribution of credit score by gender to identify the differences. Interestingly, the credit score of both Female and Male are kind of similar. 
+
+
+# Leveraging the analyses in steps 1-3, create at least four different plots over variables you finding interesting to include univariate and multivariate (covariation) analyses. Make sure the plots are customized appropriately with labels, titles, colors, and themes.
+# a. Explain each visual and why you chose to use this particular plot.
+# b. Interpret what each plot is showing and what this could say about the demographics provided (e.g. trends such as age distribution or gender distribution).
+# c. What overall patterns and/or trends do you see?
+# d. How do the visuals add to your previous review and summarization?
+# e. Do the visuals you provided tell a bigger story (when looked at together), i.e. do the individual plots coalesce into a larger narrative about the demographic data?
+
+
+Plot 1: Age Distribution (Histogram)
+
+
+```{r}
+# Create a histogram of Age distribution
+library(ggplot2)
+age_histogram <- ggplot(dataset, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
+  labs(title = "Age Distribution", x = "Age", y = "Frequency")
+
+print(age_histogram)
+
+```
+Type: Univariate
+Explanation: Histogram will show the distribution of ages in the dataset. It also provides the insights into the age demographics.
+Interpretation: We can identify the most common age groups and observe whether the data is skewed towards any particular age range.
+Overall Patterns/Trends: Most of the people are in the age between 50 - 75. 
+
+
+
+Plot 2: Credit Score by Gender (Box Plot)
+
+```{r}
+# Create a box plot of Credit Score by Gender
+credit_score_boxplot <- ggplot(dataset, aes(x = gender, y = credit_score, fill = gender)) +
+  geom_boxplot() +
+  labs(title = "Credit Score by Gender", x = "Gender", y = "Credit Score") +
+  scale_fill_manual(values = c("Male" = "blue", "Female" = "pink"))
+
+print(credit_score_boxplot)
+
+```
+Type: Bivariate (Covariation)
+Explanation: This box plot is showing the distribution of credit score within each gender category, that indicates to compare credit score between males and females.
+Interpretation: We can identify differences or similarities in credit score between genders. Interestingly, there are high similarities. 
+Overall Patterns/Trends: Males and females have kind of similar type of credit score distributions.
+
+
+
+Plot 3: Gender Distribution (Bar Chart)
+
+```{r}
+# Create a bar chart of Gender distribution
+gender_bar_chart <- ggplot(dataset, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  labs(title = "Gender Distribution", x = "Gender", y = "Count") +
+  scale_fill_manual(values = c("Male" = "blue", "Female" = "pink"))
+
+print(gender_bar_chart)
+
+```
+Type: Univariate
+Explanation: This bar chart is showing the distribution of genders in the dataset.
+Interpretation: We can observe the proportion of males and females in the dataset.
+Overall Patterns/Trends: The number of male is significantly higher than female.
+
+
+
+Plot 4: Age vs Credit Score (Scatter plot)
+
+```{r}
+# Create a scatter plot of Age vs. Credit Score
+age_credit_scatter <- ggplot(dataset, aes(x = age, y = credit_score)) +
+  geom_point(color = "purple") +
+  labs(title = "Age vs. Credit Score", x = "Age", y = "Credit Score")
+
+print(age_credit_scatter)
+
+```
+Type: Bivariate (Covariation)
+Explanation: This scatter plot is showing the relationship between age and credit score for individuals in the dataset.
+Interpretation: We can see if there is any correlation between age and credit score
+Overall Patterns/Trends: There is a trend that the credit score are in between 300 - 900 for most of the aged group
+
+
+Summary: These visualizations shows the visual layer to the previous summary statistics that indicates more detailed understanding of the dataset. These plots can tell the bigger story about the demographic data. It is seen that there is a gender imbalance in the datasets as well as insights of age distribution, gender representation, credit score, and the correlation between variables. 
+
+
+# Summarize your interpretation of the overall results of your demographic analysis, discussing any interesting insights or trends you discovered. Posit what could be done with your analysis results—could this demographic data lead to actionable insights?
+
+```{r}
+summary(dataset)
+```
+Age Distribution: The age distribution in the dataset shows a peak in the 50-75 age group, suggesting that a significant portion of the population falls within this age range.The quantity of the lower age group and the higher age group are few. It indicates that the middle aged population overall.
+
+Credit Score: The credit scores are sort of similar of men and women. This indicates the fairness and equity in terms of credit score
+
+Gender Representation: The dataset shows a gender imbalance, with more individuals identified as male than female. This imbalance may have implications for gender related analysis and decision making that should consider gender representation.
+
+Age vs Credit Score correlation: The scatter plot shows the relation between age and credit score. All of the age grouped people have a credit scores are in between in a certain number. 
+
+Actionable Insights: Since most of the people in this dataset are middle aged, then some marketing strategies can be used for this aged group. Gender equity initiatives can be taken by the authority since there are an imbalance between male and female in terms of amount / number of people. People's credit score is available but income is absent here that may plays a vital role if any financial decision making policy would be implemented. Finally, the demographic analysis provides the valuable insights in the dataset. Though it does not provide all the answers, but it plays an important role for any decision making policy.  
